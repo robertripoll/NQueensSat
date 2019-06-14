@@ -24,13 +24,29 @@ sat(... , ... ,M).
 %  - un qualsevol o el seu negat.
 % ...
 
+% Hem trobat una clàusula unitària, l'agafem i deixem de buscar
+decideix([[X]|F], X) :- !.
+% Hem trobat una clàusula NO unitària però queden més clàusules, continuem cercant
+decideix([[_|_]|F], X) :- decideix(F, X).
+% Hem arribat a l'última clàusula de la llista (no n'hi ha més), agafem el seu primer literal
+decideix([[X|_]], X).
+
 %%%%%%%%%%%%%%%%%%%%%
-% simlipf(Lit, F, FS)
+% simplif(Lit, F, FS)
 % Donat un literal Lit i una CNF,
 % -> el tercer parametre sera la CNF que ens han donat simplificada:
 %  - sense les clausules que tenen lit
 %  - treient -Lit de les clausules on hi es, si apareix la clausula buida fallara.
 % ...
+
+% No hi ha clàusules
+simplif(_, [], []).
+% Si Lit negat apareix a C, el traiem de C; si després d'això, C' no és buida sense buscar alternatives (POTSER s'hauria de permetre per fer backtracking?), la guardem a FS
+simplif(Lit, [C|F], [CS|FS]) :- NotLit is -Lit, member(NotLit, C), treu(NotLit, C, CS), !, \+empty(CS), simplif(Lit, F, FS).
+% Si Lit no apareix a la clàusula C, no busquem alternatives (!) i afegim C a FS
+simplif(Lit, [C|F], [C|FS]) :- \+(member(Lit, C)), !, simplif(Lit, F, FS).
+% Altrament (Lit apareix a C), no afegim la clàusula i seguim iterant
+simplif(Lit, [_|F], FS) :- simplif(Lit, F, FS).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -72,13 +88,39 @@ sat(... , ... ,M).
 % Donat un inici i un fi
 % -> el tercer parametre sera una llista de numeros d'inici a fi
 % ...
+% Hem acabat de generar l'últim ítem de la llista
+llista(I, F, []) :- I > F, !.
+% Generem l'últim ítem de la llista
+llista(F, F, [F|L]) :- !, I is F + 1, llista(I, F, L).
+% Generem l'ítem número I de la llista
+llista(I, F, [I|L]) :- I2 is I + 1, llista(I2, F, L).
 
 % AUX
+
+% Ja som fora l'interval, hem passat de "Final" i deixem de cercar
+extreu(I, F, X, _, []) :- X > F, !.
+% Som fora l'interval, encara hem d'arribar a "Inici"
+extreu(I, F, X, [E|L], LL) :- X < I, X2 is X + 1, extreu(I, F, X2, L, LL).
+% Estem dins l'interval, l'element iterat d'L es guarda a LL
+extreu(I, F, X, [E|L], [E|LL]) :- X2 is X + 1, X >= I, X =< F, extreu(I, F, X2, L, LL).
+
+% extreu(Inici, Fi, L, LL)
+% Donada una llista L i un interval d'índexos dels elements desitjats
+% (Inici i Fi), LL serà la llista amb els elements que es trobin dins
+% d'aquest interval dins d'L.
+extreu(I, F, L, LL) :- extreu(I, F, 1, L, LL).
+
+% Ja hem fet els "NT" (número de trossos) trossos, deixem de cercar
+trosseja(_, T, NT, _, []) :- T > NT, !.
+% Trossejem L per T-èssim tros
+trosseja(L, T, NT, MT, [X|LL]) :- T =< NT, T2 is T + 1, I is (MT * (T - 1)) + 1, F is MT * T, extreu(I, F, L, X), trosseja(L, T2, NT, MT, LL).
+
 % trosseja(L,N,LL)
 % Donada una llista (L) i el numero de trossos que en volem (N)
 % -> LL sera la llista de N llistes de L amb la mateixa mida
 % (S'assumeix que la llargada de L i N ho fan possible)
 % ...
+trosseja(L, N, LL) :- length(L, NE), MT is NE//N, parteix(L, MT, 1, N, LL).
 
 % AUX
 % fixa(PI,N,F)
