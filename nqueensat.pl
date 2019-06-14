@@ -120,7 +120,7 @@ trosseja(L, T, NT, MT, [X|LL]) :- T =< NT, T2 is T + 1, I is (MT * (T - 1)) + 1,
 % -> LL sera la llista de N llistes de L amb la mateixa mida
 % (S'assumeix que la llargada de L i N ho fan possible)
 % ...
-trosseja(L, N, LL) :- length(L, NE), MT is NE//N, parteix(L, MT, 1, N, LL).
+trosseja(L, N, LL) :- length(L, NE), MT is NE//N, trosseja(L, 1, N, MT, LL).
 
 % AUX
 % fixa(PI,N,F)
