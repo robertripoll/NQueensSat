@@ -74,10 +74,16 @@ comaminimUn(L, [L]).
 treurePrimer([], []).
 treurePrimer([_|L1], L1).
 
+% No queden més variables per emparellar
 parelles([], [], []) :- !.
+% Emparellem una variable de la primera llista amb la segona llista, de manera que s'emparellin de forma negada
 parelles([X|L1], [Y|L2], [[X2,Y2]|P]) :- X2 is X*(-1), Y2 is Y*(-1), parelles([X|L1], L2, P).
+% No queden més variables de la segona llista, passem a emparellar a partir del següent element de la primera llista
 parelles([X|L1], [], P) :- treurePrimer(L1, L2), parelles(L1, L2, P).
 
+
+% Comencem el procés d'emparellament a partir d'una primera llista formada per la llista del paràmetre i d'una segona llista
+% sense el primer element de la primera llista
 parelles([X|L], P) :- parelles([X|L], L, P).
 
 comamoltUn(L, CNF) :- parelles(L, P), append([L], P, CNF).
