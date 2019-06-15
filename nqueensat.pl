@@ -13,7 +13,7 @@ decideix(CNF,Lit),
 simplif(Lit,CNF,CNFS),
 
 % crida recursiva amb la CNF i la interpretacio actualitzada
-sat(... , ... ,M).
+sat(CNFS, [Lit|I], M).
 
 
 %%%%%%%%%%%%%%%%%%
@@ -41,7 +41,7 @@ decideix([[X|_]], X).
 
 % No hi ha clàusules
 simplif(_, [], []).
-% Si Lit negat apareix a C, el traiem de C; si després d'això, C' no és buida sense buscar alternatives (POTSER s'hauria de permetre per fer backtracking?), la guardem a FS
+% Si Lit negat apareix a C, el traiem de C; si després d'això, C' no és buida sense buscar alternatives, la guardem a FS
 simplif(Lit, [C|F], [CS|FS]) :- NotLit is -Lit, member(NotLit, C), treu(NotLit, C, CS), !, \+empty(CS), simplif(Lit, F, FS).
 % Si Lit no apareix a la clàusula C, no busquem alternatives (!) i afegim C a FS
 simplif(Lit, [C|F], [C|FS]) :- \+(member(Lit, C)), !, simplif(Lit, F, FS).
@@ -63,17 +63,32 @@ simplif(Lit, [_|F], FS) :- simplif(Lit, F, FS).
 % -> el segon parametre sera la CNF que codifica que com a minim una sigui certa.
 % ...
 
+comaminimUn(L, [L]).
+
 %%%%%%%%%%%%%%%%%%%
 % comamoltUn(L,CNF)
 % Donat una llista de variables booleanes,
 % -> el segon parametre sera la CNF que codifica que com a molt una sigui certa.
 % ...
 
+treurePrimer([], []).
+treurePrimer([_|L1], L1).
+
+parelles([], [], []) :- !.
+parelles([X|L1], [Y|L2], [[X2,Y2]|P]) :- X2 is X*(-1), Y2 is Y*(-1), parelles([X|L1], L2, P).
+parelles([X|L1], [], P) :- treurePrimer(L1, L2), parelles(L1, L2, P).
+
+parelles([X|L], P) :- parelles([X|L], L, P).
+
+comamoltUn(L, CNF) :- parelles(L, P), append([L], P, CNF).
+
 %%%%%%%%%%%%%%%%%%%
 % exactamentUn(L,CNF)
 % Donat una llista de variables booleanes,
 % -> el segon parametre sera la CNF que codifica que exactament una sigui certa.
 % ...
+
+exactamentUn(L, CNF) :- comaminimUn(L, CNF), comamoltUn(L, CNF).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 % fesTauler(+N,+PI,+PP,V,I)
