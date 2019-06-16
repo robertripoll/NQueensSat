@@ -103,6 +103,34 @@ exactamentUn(L, CNF) :- comaminimUn(L, CNF), comamoltUn(L, CNF).
 % -> V sera el la llista de llistes variables necessaries per codificar el tauler
 % -> I sera la CNF codificant posicions inicials i prohibides
 % ...
+fesTauler(N,[],[],V,I) :-   trosseja(L,N,I), llista(1, N*N, L), marcaReines(Vaux,N,[],L), trosseja(Vaux,N,V).
+fesTauler(N,PI,PP,V,I) :-   llista(1, N*N, L), llista(1, N*N, L2),
+                            marcaReines(L,N,PI,Vaux), trosseja(Vaux,N,V),
+                            marcaPohibides(L2,N,PP,Iaux), marcaReines(Iaux,N,PI,Iaux2), trosseja(Iaux2,N,I).
+                        
+
+% marcaReines(Llista,N,Posicions,LRetorn).
+% Donada una llista L que conté totes les posicions del tauler (en forma de llista de llistes)
+% Donada una llista de posicions (en forma de (x,y)) ordenades de forma que la seva representació en vector
+% sigui ordenada amb l'index = (X-1)*N+Y
+% Donat N, que és la mida del costat del tauler NxN
+% LL és la llista resultant tal que per a cada element de L, si existeix la posició corresponent, s'expressa
+% en positiu (hi ha reina) , altrament en negatiu (no hi ha reina) .
+marcaReines([],_,[],[]).
+marcaReines([L],N,[], LR) :- Negat is -L , append([Negat], [], LR).
+marcaReines([L|LT],N,[], LR) :- Negat is -L , append([Negat], LL, LR), marcaReines(LT, N, [], LL).
+marcaReines([L|LT], N, [(X,Y)|R], LR) :- L is (X-1)*N+Y, append([L], LL, LR), marcaReines(LT,N,R,LL). 
+marcaReines([L|LT],N,[(X,Y)|R], LR) :- Negat is -L , append([Negat], LL, LR), marcaReines(LT, N, [(X,Y)|R], LL).
+
+% marcaProhobides(Llista,N,Posicions,LRetorn),
+% De forma molt similar a marcaReines, però en cas d'existir l'element indicat a Posicions, dins la Llista,
+% aquest es marca amb un "0",
+marcaPohibides([],_,[],[]).
+marcaPohibides([L],N,[], LR) :- append([L], [], LR).
+marcaPohibides([L|LT],N,[], LR) :- append([L], LL, LR), marcaPohibides(LT, N, [], LL).
+marcaPohibides([L|LT], N, [(X,Y)|R], LR) :- L is (X-1)*N+Y, append([0], LL, LR), marcaPohibides(LT,N,R,LL). 
+marcaPohibides([L|LT],N,[(X,Y)|R], LR) :- append([L], LL, LR), marcaPohibides(LT, N, [(X,Y)|R], LL).
+
 
 % AUX
 % llista(I,F,L)
