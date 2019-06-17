@@ -41,7 +41,9 @@ decideix([[X|_]], X).
 
 % No hi ha clàusules
 simplif(_, [], []).
-% Si Lit negat apareix a C, el traiem de C; si després d'això, C' no és buida sense buscar alternatives, la guardem a FS
+% Si Lit negat apareix a C i després de treure'l de C és buida fallem sense buscar alternatives, permetent trobar alternatives (backtracking) si s'escau
+simplif(Lit, [C|F], [CS|FS]) :- NotLit is -Lit, member(NotLit, C), treu(NotLit, C, CS), empty(CS), !, fail.
+% Si Lit negat apareix a C i després de treure'l de C, C' no és buida sense buscar alternatives, la guardem a FS
 simplif(Lit, [C|F], [CS|FS]) :- NotLit is -Lit, member(NotLit, C), treu(NotLit, C, CS), !, \+empty(CS), simplif(Lit, F, FS).
 % Si Lit no apareix a la clàusula C, no busquem alternatives (!) i afegim C a FS
 simplif(Lit, [C|F], [C|FS]) :- \+(member(Lit, C)), !, simplif(Lit, F, FS).
@@ -63,7 +65,7 @@ simplif(Lit, [_|F], FS) :- simplif(Lit, F, FS).
 % -> el segon parametre sera la CNF que codifica que com a minim una sigui certa.
 % ...
 
-comaminimUn(L, [L]).
+comaminimUn(+L, [L]).
 
 %%%%%%%%%%%%%%%%%%%
 % comamoltUn(L,CNF)
@@ -86,7 +88,7 @@ parelles([X|L1], [], P) :- treurePrimer(L1, L2), parelles(L1, L2, P).
 % sense el primer element de la primera llista
 parelles([X|L], P) :- parelles([X|L], L, P).
 
-comamoltUn(L, CNF) :- parelles(L, P), append([L], P, CNF).
+comamoltUn(+L, CNF) :- parelles(L, P), append([L], P, CNF).
 
 %%%%%%%%%%%%%%%%%%%
 % exactamentUn(L,CNF)
@@ -94,7 +96,7 @@ comamoltUn(L, CNF) :- parelles(L, P), append([L], P, CNF).
 % -> el segon parametre sera la CNF que codifica que exactament una sigui certa.
 % ...
 
-exactamentUn(L, CNF) :- comaminimUn(L, CNF), comamoltUn(L, CNF).
+exactamentUn(+L, CNF) :- comaminimUn(L, CNF), comamoltUn(L, CNF).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 % fesTauler(+N,+PI,+PP,V,I)
@@ -117,6 +119,7 @@ fesTauler(N,PI,PP,V,I) :- trosseja(L,N,V), llista(1, N*N, L),
 toCNF(N,Signe,[],[]).
 toCNF(N,Signe,[(X,Y)],CNF):- Res is Signe*((X-1)*N+Y), append([],[Res],CNF),!.
 toCNF(N,Signe,[(X,Y)|R],CNF):- Res is Signe*((X-1)*N+Y), append([Res],LR, CNF), toCNF(N, Signe, R, LR).
+
 
 % AUX
 % llista(I,F,L)
@@ -237,6 +240,11 @@ coordenadesAVars([(F,C)|R],N,[V|RV]):-V is (F-1)*N+C, coordenadesAVars(R,N,RV).
 % ...
 
 
+llegeixNombre(X) :- read(X), number(X), !.
+
+llegeixLlista([X|L]) :- read(X), number(X), X > 0, llegeixLlista(L).
+llegeixLlista([]).
+
 %%%%%%%%%
 % resol()
 % Ens demana els parametres del tauler i l'estat inicial,
@@ -244,7 +252,12 @@ coordenadesAVars([(F,C)|R],N,[V|RV]):-V is (F-1)*N+C, coordenadesAVars(R,N,RV).
 % que la enviem a resoldre amb el SAT solver
 % i si te solucio en mostrem el tauler
 resol():-
-    ...
+    write('Introdueix mida N del tauler NxN: '),
+    llegeixNombre(N),
+    write('Introdueix les posicions inicials: \n'),
+    llegeixLlista(I),
+    write('Introdueix les posicions prohibides: \n'),
+    llegeixLlista(P),
     fesTauler(N,I,P,V,Ini),
     minimNReines(V,FN),
     ...
