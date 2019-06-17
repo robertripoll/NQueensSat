@@ -65,7 +65,7 @@ simplif(Lit, [_|F], FS) :- simplif(Lit, F, FS).
 % -> el segon parametre sera la CNF que codifica que com a minim una sigui certa.
 % ...
 
-comaminimUn(L, [L]).
+comaminimUn(+L, [L]).
 
 %%%%%%%%%%%%%%%%%%%
 % comamoltUn(L,CNF)
@@ -88,7 +88,7 @@ parelles([X|L1], [], P) :- treurePrimer(L1, L2), parelles(L1, L2, P).
 % sense el primer element de la primera llista
 parelles([X|L], P) :- parelles([X|L], L, P).
 
-comamoltUn(L, CNF) :- parelles(L, P), append([L], P, CNF).
+comamoltUn(+L, CNF) :- parelles(L, P), append([L], P, CNF).
 
 %%%%%%%%%%%%%%%%%%%
 % exactamentUn(L,CNF)
@@ -96,7 +96,7 @@ comamoltUn(L, CNF) :- parelles(L, P), append([L], P, CNF).
 % -> el segon parametre sera la CNF que codifica que exactament una sigui certa.
 % ...
 
-exactamentUn(L, CNF) :- comaminimUn(L, CNF), comamoltUn(L, CNF).
+exactamentUn(+L, CNF) :- comaminimUn(L, CNF), comamoltUn(L, CNF).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 % fesTauler(+N,+PI,+PP,V,I)
