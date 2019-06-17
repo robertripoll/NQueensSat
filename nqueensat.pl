@@ -41,7 +41,9 @@ decideix([[X|_]], X).
 
 % No hi ha clàusules
 simplif(_, [], []).
-% Si Lit negat apareix a C, el traiem de C; si després d'això, C' no és buida sense buscar alternatives, la guardem a FS
+% Si Lit negat apareix a C i després de treure'l de C és buida fallem sense buscar alternatives
+simplif(Lit, [C|F], [CS|FS]) :- NotLit is -Lit, member(NotLit, C), treu(NotLit, C, CS), empty(CS), !, fail.
+% Si Lit negat apareix a C i després de treure'l de C, C' no és buida sense buscar alternatives, la guardem a FS
 simplif(Lit, [C|F], [CS|FS]) :- NotLit is -Lit, member(NotLit, C), treu(NotLit, C, CS), !, \+empty(CS), simplif(Lit, F, FS).
 % Si Lit no apareix a la clàusula C, no busquem alternatives (!) i afegim C a FS
 simplif(Lit, [C|F], [C|FS]) :- \+(member(Lit, C)), !, simplif(Lit, F, FS).
