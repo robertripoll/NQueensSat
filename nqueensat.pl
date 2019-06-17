@@ -41,7 +41,7 @@ decideix([[X|_]], X).
 
 % No hi ha clàusules
 simplif(_, [], []).
-% Si Lit negat apareix a C i després de treure'l de C és buida fallem sense buscar alternatives
+% Si Lit negat apareix a C i després de treure'l de C és buida fallem sense buscar alternatives, permetent trobar alternatives (backtracking) si s'escau
 simplif(Lit, [C|F], [CS|FS]) :- NotLit is -Lit, member(NotLit, C), treu(NotLit, C, CS), empty(CS), !, fail.
 % Si Lit negat apareix a C i després de treure'l de C, C' no és buida sense buscar alternatives, la guardem a FS
 simplif(Lit, [C|F], [CS|FS]) :- NotLit is -Lit, member(NotLit, C), treu(NotLit, C, CS), !, \+empty(CS), simplif(Lit, F, FS).
