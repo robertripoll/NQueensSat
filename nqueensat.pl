@@ -103,38 +103,21 @@ exactamentUn(L, CNF) :- comaminimUn(L, CNF), comamoltUn(L, CNF).
 % -> V sera el la llista de llistes variables necessaries per codificar el tauler
 % -> I sera la CNF codificant posicions inicials i prohibides
 % ...
-fesTauler(N,[],[],V,I) :-   trosseja(L,N,I), llista(1, N*N, L), marcaReines(Vaux,N,[],L), trosseja(Vaux,N,V).
-fesTauler(N,PI,PP,V,I) :-   llista(1, N*N, L), llista(1, N*N, L2),
-                            marcaReines(L,N,PI,Vaux), trosseja(Vaux,N,V),
-                            marcaPohibides(L2,N,PP,Iaux), marcaReines(Iaux,N,PI,Iaux2), trosseja(Iaux2,N,I).
-                        
-
-% marcaReines(Llista,N,Posicions,LRetorn).
-% Donada una llista L que conté totes les posicions del tauler (en forma de llista de llistes)
-% Donada una llista de posicions (en forma de (x,y)) ordenades de forma que la seva representació en vector
-% sigui ordenada amb l'index = (X-1)*N+Y
-% Donat N, que és la mida del costat del tauler NxN
-% LL és la llista resultant tal que per a cada element de L, si existeix la posició corresponent, s'expressa
-% en positiu (hi ha reina) , altrament en negatiu (no hi ha reina) .
-marcaReines([],_,[],[]).
-marcaReines([L],N,[], LR) :- Negat is -L , append([Negat], [], LR).
-marcaReines([L|LT],N,[], LR) :- Negat is -L , append([Negat], LL, LR), marcaReines(LT, N, [], LL).
-marcaReines([L|LT], N, [(X,Y)|R], LR) :- L is (X-1)*N+Y, append([L], LL, LR), marcaReines(LT,N,R,LL). 
-marcaReines([L|LT],N,[(X,Y)|R], LR) :- Negat is -L , append([Negat], LL, LR), marcaReines(LT, N, [(X,Y)|R], LL).
-
-% marcaProhobides(Llista,N,Posicions,LRetorn),
-% De forma molt similar a marcaReines, però en cas d'existir l'element indicat a Posicions, dins la Llista,
-% aquest es marca amb un "0",
-marcaPohibides([],_,[],[]).
-marcaPohibides([L],N,[], LR) :- append([L], [], LR).
-marcaPohibides([L|LT],N,[], LR) :- append([L], LL, LR), marcaPohibides(LT, N, [], LL).
-marcaPohibides([L|LT], N, [(X,Y)|R], LR) :- L is (X-1)*N+Y, append([0], LL, LR), marcaPohibides(LT,N,R,LL). 
-marcaPohibides([L|LT],N,[(X,Y)|R], LR) :- append([L], LL, LR), marcaPohibides(LT, N, [(X,Y)|R], LL).
-
-
+fesTauler(N,[],[],V,[]):- trosseja(L,N,V), llista(1, N*N, L).
+fesTauler(N,PI,PP,V,I) :- trosseja(L,N,V), llista(1, N*N, L),
+                          Prohibit is -1, toCNF(N,Prohibit,PP,L1),
+                          Reines is 1, toCNF(N,Reines,PI,L2),
+                          append(L1,L2,I).
+                          
+% toCNF(N,Signe,Posicions,CNF).
+% Donada la mida N del costat del tauler NxN i donat un Signe (valor positiu o valor negatiu) i 
+% donada una llista de parells d'enters (posicions (X,Y) del tauler)
+% -> CNF serà la llista d'enters a partir de l'index amb la formula Signe*((X-1)*N+Y) 
+% (posicions dins un vector).
 toCNF(N,Signe,[],[]).
-toCNF(N,Signe,[(X,Y)],L):- Res is is Signe*(X-1)*N+Y, append([],Res,L).
-toCNF(N,Signe,[(X,Y)|R],L):- Res is is Signe*(X-1)*N+Y, append([],Res,LR), toCNF(N,Signe,[R],LR).
+toCNF(N,Signe,[(X,Y)],CNF):- Res is Signe*((X-1)*N+Y), append([],[Res],CNF),!.
+toCNF(N,Signe,[(X,Y)|R],CNF):- Res is Signe*((X-1)*N+Y), append([Res],LR, CNF), toCNF(N, Signe, R, LR).
+
 % AUX
 % llista(I,F,L)
 % Donat un inici i un fi
