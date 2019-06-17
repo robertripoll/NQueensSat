@@ -225,6 +225,11 @@ coordenadesAVars([(F,C)|R],N,[V|RV]):-V is (F-1)*N+C, coordenadesAVars(R,N,RV).
 % ...
 
 
+llegeixNombre(X) :- read(X), number(X), !.
+
+llegeixLlista([X|L]) :- read(X), number(X), X > 0, llegeixLlista(L).
+llegeixLlista([]).
+
 %%%%%%%%%
 % resol()
 % Ens demana els parametres del tauler i l'estat inicial,
@@ -232,7 +237,12 @@ coordenadesAVars([(F,C)|R],N,[V|RV]):-V is (F-1)*N+C, coordenadesAVars(R,N,RV).
 % que la enviem a resoldre amb el SAT solver
 % i si te solucio en mostrem el tauler
 resol():-
-    ...
+    write('Introdueix mida N del tauler NxN: '),
+    llegeixNombre(N),
+    write('Introdueix les posicions inicials: \n'),
+    llegeixLlista(I),
+    write('Introdueix les posicions prohibides: \n'),
+    llegeixLlista(P),
     fesTauler(N,I,P,V,Ini),
     minimNReines(V,FN),
     ...
