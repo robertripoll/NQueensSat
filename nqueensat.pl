@@ -132,6 +132,9 @@ marcaPohibides([L|LT], N, [(X,Y)|R], LR) :- L is (X-1)*N+Y, append([0], LL, LR),
 marcaPohibides([L|LT],N,[(X,Y)|R], LR) :- append([L], LL, LR), marcaPohibides(LT, N, [(X,Y)|R], LL).
 
 
+toCNF(N,Signe,[],[]).
+toCNF(N,Signe,[(X,Y)],L):- Res is is Signe*(X-1)*N+Y, append([],Res,L).
+toCNF(N,Signe,[(X,Y)|R],L):- Res is is Signe*(X-1)*N+Y, append([],Res,LR), toCNF(N,Signe,[R],LR).
 % AUX
 % llista(I,F,L)
 % Donat un inici i un fi
