@@ -105,6 +105,21 @@ exactamentUn(+L, CNF) :- comaminimUn(L, CNF), comamoltUn(L, CNF).
 % -> V sera el la llista de llistes variables necessaries per codificar el tauler
 % -> I sera la CNF codificant posicions inicials i prohibides
 % ...
+fesTauler(N,[],[],V,[]):- trosseja(L,N,V), llista(1, N*N, L).
+fesTauler(N,PI,PP,V,I) :- trosseja(L,N,V), llista(1, N*N, L),
+                          Prohibit is -1, toCNF(N,Prohibit,PP,L1),
+                          Reines is 1, toCNF(N,Reines,PI,L2),
+                          append(L1,L2,I).
+                          
+% toCNF(N,Signe,Posicions,CNF).
+% Donada la mida N del costat del tauler NxN i donat un Signe (valor positiu o valor negatiu) i 
+% donada una llista de parells d'enters (posicions (X,Y) del tauler)
+% -> CNF serà la llista d'enters a partir de l'index amb la formula Signe*((X-1)*N+Y) 
+% (posicions dins un vector).
+toCNF(N,Signe,[],[]).
+toCNF(N,Signe,[(X,Y)],CNF):- Res is Signe*((X-1)*N+Y), append([],[Res],CNF),!.
+toCNF(N,Signe,[(X,Y)|R],CNF):- Res is Signe*((X-1)*N+Y), append([Res],LR, CNF), toCNF(N, Signe, R, LR).
+
 
 % AUX
 % llista(I,F,L)
@@ -162,12 +177,26 @@ trosseja(L, N, LL) :- length(L, NE), MT is NE//N, trosseja(L, 1, N, MT, LL).
 % donada la matriu de variables,
 % -> F sera la CNF que codifiqui que no s'amenecen les reines de les mateixes files
 % ...
+noAmenacesFiles([],[]).
+noAmenacesFiles([H],F):- append(L,[],F), comamoltUn(H,L).
+noAmenacesFiles([H|T],F):- comamoltUn(H,L), noAmenacesFiles(T,CNFaux), append(L,CNFaux,F).
+
+transpose([[]|_], []).
+transpose(Matrix, [Row|Rows]) :- transpose_1st_col(Matrix, Row, RestMatrix),
+                                 transpose(RestMatrix, Rows).
+transpose_1st_col([], [], []).
+transpose_1st_col([[H|T]|Rows], [H|Hs], [T|Ts]) :- transpose_1st_col(Rows, Hs, Ts).
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 % noAmenacesColumnes(+V,C)
 % donada la matriu de variables,
 % -> C sera la CNF que codifiqui que no s'amenecen les reines de les mateixes columnes
 % ...
+noAmenacesColumnes([],[]).
+noAmenacesColumnes([H],C):- noAmenacesFiles([H], C).
+noAmenacesColumnes([H|T],C):- transpose([H|T], Tr), noAmenacesFiles(Tr, C).
+
 
 % AQUEST PREDICAT ESTA PARCIALMENT FET. CAL QUE CALCULEU LES "ALTRES"
 % DIAGONALS
