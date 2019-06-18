@@ -1,4 +1,4 @@
-use_module(library(lists)). % Necessari per al l'ús del predicat "delete"
+:- use_module(library(lists)). % Necessari per al l'ús del predicat "delete"
 
 %%%%%%%%%%%%
 % sat(F,I,M)
@@ -264,13 +264,17 @@ llegeixNombre(X) :- read(X), number(X), !.
 llegeixLlista([X|L]) :- read(X), number(X), X > 0, llegeixLlista(L).
 llegeixLlista([]).
 
+filtrarPositius([], []).
+filtrarPositius([X|L], [X|P]) :- X > 0, !, filtrarPositius(L, P).
+filtrarPositius([_|L], P) :- filtrarPositius(L, P).
+
 %%%%%%%%%
 % resol()
 % Ens demana els parametres del tauler i l'estat inicial,
 % codifica les restriccions del problema i en fa una formula
 % que la enviem a resoldre amb el SAT solver
 % i si te solucio en mostrem el tauler
-resol():-
+resol :-
     write('Introdueix mida N del tauler NxN: '),
     llegeixNombre(N),
     write('Introdueix les posicions inicials (entra un <= 0 per acabar): \n'),
@@ -281,14 +285,14 @@ resol():-
     minimNReines(V, FN),
     append(Ini, FN, CNF),
     noAmenacesFiles(V, CNFfiles),
-    append(CNFfiles, CNF, CNF2)
+    append(CNFfiles, CNF, CNF2),
     noAmenacesColumnes(V, CNFcolumnes),
     append(CNFcolumnes, CNF2, CNF3),
     noAmenacesDiagonals(N, CNFdiagonals),
     append(CNFdiagonals, CNF3, CNF4),
     sat(CNF4, [], M),
-    ...
-    mostraTauler(N,...).
+    filtrarPositius(M, M2),
+    mostraTauler(N, M2).
 
 
 %%%%%%%%%%%%%%%%%%%
@@ -308,6 +312,18 @@ resol():-
 % Fixeu-vos que li passarem els literals positius del model de la nostra
 % formula.
 % ...
+
+mostrar([], S, Q) :- !.
+mostrar([[C|R]|L], S, Q) :- member(C, Q), write('|Q'), !, mostrar([R|L], S, Q).
+mostrar([[C|R]|L], S, Q) :- write('| '), !, mostrar([R|L], S, Q).
+mostrar([[C|[]]|L], S, Q) :- member(C, Q), write(' Q'), !, mostrar(L, S, Q).
+mostrar([[C|[]]|L], S, Q) :- write(' '), !, mostrar(L, S, Q).
+mostrar([[]|L], S, Q) :- write('|\n'), mostrarSeparador(S), !, mostrar(L, S, Q).
+
+mostrarSeparador(0) :- write('\n').
+mostrarSeparador(N) :- write('-'), N2 is N-1, mostrarSeparador(N2).
+
+mostraTauler(N, Q) :- S is (N+1)+N, mostrarSeparador(S), M is N*N, llista(1, M, L), trosseja(L, N, C), mostrar(C, S, Q).
 
 
 
