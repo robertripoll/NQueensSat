@@ -31,6 +31,7 @@ decideix([[X]|F], X) :- !.
 decideix([[_|_]|F], X) :- decideix(F, X).
 % Hem arribat a l'última clàusula de la llista (no n'hi ha més), agafem el seu primer literal
 decideix([[X|_]], X).
+decideix([[X|_]], Y) :- Y is X*(-1).
 
 %%%%%%%%%%%%%%%%%%%%%
 % simplif(Lit, F, FS)
@@ -43,7 +44,7 @@ decideix([[X|_]], X).
 % No hi ha clàusules
 simplif(_, [], []).
 % Si Lit negat apareix a C i després de treure'l de C és buida fallem sense buscar alternatives, permetent trobar alternatives (backtracking) si s'escau
-simplif(Lit, [C|F], [CS|FS]) :- NotLit is -Lit, member(NotLit, C), delete(C, NotLit, CS), empty(CS), !, fail.
+%simplif(Lit, [C|F], [CS|FS]) :- NotLit is -Lit, member(NotLit, C), delete(C, NotLit, CS), empty(CS), !, fail.
 % Si Lit negat apareix a C i després de treure'l de C, C' no és buida sense buscar alternatives, la guardem a FS
 simplif(Lit, [C|F], [CS|FS]) :- NotLit is -Lit, member(NotLit, C), delete(C, NotLit, CS), !, \+empty(CS), simplif(Lit, F, FS).
 % Si Lit no apareix a la clàusula C, no busquem alternatives (!) i afegim C a FS
