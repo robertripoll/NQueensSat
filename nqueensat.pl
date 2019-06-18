@@ -67,7 +67,7 @@ simplif(Lit, [_|F], FS) :- simplif(Lit, F, FS).
 % -> el segon parametre sera la CNF que codifica que com a minim una sigui certa.
 % ...
 
-comaminimUn(+L, [L]).
+comaminimUn(L, [L]).
 
 %%%%%%%%%%%%%%%%%%%
 % comamoltUn(L,CNF)
@@ -90,7 +90,7 @@ parelles([X|L1], [], P) :- treurePrimer(L1, L2), parelles(L1, L2, P).
 % sense el primer element de la primera llista
 parelles([X|L], P) :- parelles([X|L], L, P).
 
-comamoltUn(+L, CNF) :- parelles(L, P), append([L], P, CNF).
+comamoltUn(L, CNF) :- parelles(L, P), append([L], P, CNF).
 
 %%%%%%%%%%%%%%%%%%%
 % exactamentUn(L,CNF)
@@ -98,7 +98,7 @@ comamoltUn(+L, CNF) :- parelles(L, P), append([L], P, CNF).
 % -> el segon parametre sera la CNF que codifica que exactament una sigui certa.
 % ...
 
-exactamentUn(+L, CNF) :- comaminimUn(L, CNF), comamoltUn(L, CNF).
+exactamentUn(L, CNF) :- comaminimUn(L, CNF), comamoltUn(L, CNF).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 % fesTauler(+N,+PI,+PP,V,I)
@@ -207,11 +207,16 @@ noAmenacesColumnes([H|T],C):- transpose([H|T], Tr), noAmenacesFiles(Tr, C).
 % donada la mida del tauler,
 % -> D sera la CNF que codifiqui que no s'amenecen les reines de les mateixes diagonals
 noAmenacesDiagonals(N,D):-
-    diagonals(N,L), llistesDiagonalsAVars(L,N,VARS), ...
+    diagonals(N,L), llistesDiagonalsAVars(L,N,VARS), expandeix(VARS,D).
+    
+expandeix([],[]).
+expandeix([H],L):- comamoltUn(H,Ls), append(Ls,[],L).
+expandeix([H|R],L):- comamoltUn(H,Ls), append(Ls,Lr,L), inoAmenacaDiagonals(R,Lr).
 
 
 % Genera les llistes de diagonals d'una matriu NxN. Cada diagonal es una llista de coordenades.
-diagonals(N,L):- diagonalsIn(1,N,L1), diagonals2In(1,N,L2), append(L1,L2,L).
+% diagonals(N,L):- diagonalsIn(1,N,L1), diagonals2In(1,N,L2), append(L1,L2,L).
+diagonals(N,L):- diagonalsIn(1,N,L).
 
 % diagonalsIn(D,N,L)
 % Generem les diagonals dalt-dreta a baix-esquerra, D es el numero de
