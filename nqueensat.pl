@@ -1,3 +1,4 @@
+use_module(library(lists)). % Necessari per al l'ús del predicat "delete"
 
 %%%%%%%%%%%%
 % sat(F,I,M)
@@ -30,6 +31,7 @@ decideix([[X]|F], X) :- !.
 decideix([[_|_]|F], X) :- decideix(F, X).
 % Hem arribat a l'última clàusula de la llista (no n'hi ha més), agafem el seu primer literal
 decideix([[X|_]], X).
+decideix([[X|_]], Y) :- Y is X*(-1).
 
 %%%%%%%%%%%%%%%%%%%%%
 % simplif(Lit, F, FS)
@@ -42,9 +44,9 @@ decideix([[X|_]], X).
 % No hi ha clàusules
 simplif(_, [], []).
 % Si Lit negat apareix a C i després de treure'l de C és buida fallem sense buscar alternatives, permetent trobar alternatives (backtracking) si s'escau
-simplif(Lit, [C|F], [CS|FS]) :- NotLit is -Lit, member(NotLit, C), treu(NotLit, C, CS), empty(CS), !, fail.
+%simplif(Lit, [C|F], [CS|FS]) :- NotLit is -Lit, member(NotLit, C), delete(C, NotLit, CS), empty(CS), !, fail.
 % Si Lit negat apareix a C i després de treure'l de C, C' no és buida sense buscar alternatives, la guardem a FS
-simplif(Lit, [C|F], [CS|FS]) :- NotLit is -Lit, member(NotLit, C), treu(NotLit, C, CS), !, \+empty(CS), simplif(Lit, F, FS).
+simplif(Lit, [C|F], [CS|FS]) :- NotLit is -Lit, member(NotLit, C), delete(C, NotLit, CS), !, \+empty(CS), simplif(Lit, F, FS).
 % Si Lit no apareix a la clàusula C, no busquem alternatives (!) i afegim C a FS
 simplif(Lit, [C|F], [C|FS]) :- \+(member(Lit, C)), !, simplif(Lit, F, FS).
 % Altrament (Lit apareix a C), no afegim la clàusula i seguim iterant
@@ -271,20 +273,20 @@ llegeixLlista([]).
 resol():-
     write('Introdueix mida N del tauler NxN: '),
     llegeixNombre(N),
-    write('Introdueix les posicions inicials: \n'),
+    write('Introdueix les posicions inicials (entra un <= 0 per acabar): \n'),
     llegeixLlista(I),
-    write('Introdueix les posicions prohibides: \n'),
+    write('Introdueix les posicions prohibides (entra un <= 0 per acabar): \n'),
     llegeixLlista(P),
-    fesTauler(N,I,P,V,Ini),
-    minimNReines(V,FN),
-    ...
-    noAmenacesFiles(V,CNFfiles),
-    ...
-    noAmenacesColumnes(V,CNFcolumnes),
-    ...
-    noAmenacesDiagonals(N,CNFdiagonals),
-    ...
-    sat(...,[],...),
+    fesTauler(N, I, P, V, Ini),
+    minimNReines(V, FN),
+    append(Ini, FN, CNF),
+    noAmenacesFiles(V, CNFfiles),
+    append(CNFfiles, CNF, CNF2)
+    noAmenacesColumnes(V, CNFcolumnes),
+    append(CNFcolumnes, CNF2, CNF3),
+    noAmenacesDiagonals(N, CNFdiagonals),
+    append(CNFdiagonals, CNF3, CNF4),
+    sat(CNF4, [], M),
     ...
     mostraTauler(N,...).
 
