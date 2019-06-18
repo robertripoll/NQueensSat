@@ -386,13 +386,7 @@ resol :-
 % P és la llista de posicions prohibides. Codifica les restriccions
 % del problema i en fa una formula que la enviem a resoldre amb el
 % SAT solver i si te solucio en mostrem el tauler
-resol :-
-    write('Introdueix mida N del tauler NxN: '),
-    llegeixNombre(N),
-    write('Introdueix les posicions inicials (entra un <= 0 per acabar): \n'),
-    llegeixLlista(I),
-    write('Introdueix les posicions prohibides (entra un <= 0 per acabar): \n'),
-    llegeixLlista(P),
+resol(N, I, P) :-
     fesTauler(N, I, P, V, Ini),
     minimNReines(V, FN),
     append(Ini, FN, CNF),
