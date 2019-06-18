@@ -177,12 +177,26 @@ trosseja(L, N, LL) :- length(L, NE), MT is NE//N, trosseja(L, 1, N, MT, LL).
 % donada la matriu de variables,
 % -> F sera la CNF que codifiqui que no s'amenecen les reines de les mateixes files
 % ...
+noAmenacesFiles([],[]).
+noAmenacesFiles([H],F):- append(L,[],F), comamoltUn(H,L).
+noAmenacesFiles([H|T],F):- comamoltUn(H,L), noAmenacesFiles(T,CNFaux), append(L,CNFaux,F).
+
+transpose([[]|_], []).
+transpose(Matrix, [Row|Rows]) :- transpose_1st_col(Matrix, Row, RestMatrix),
+                                 transpose(RestMatrix, Rows).
+transpose_1st_col([], [], []).
+transpose_1st_col([[H|T]|Rows], [H|Hs], [T|Ts]) :- transpose_1st_col(Rows, Hs, Ts).
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 % noAmenacesColumnes(+V,C)
 % donada la matriu de variables,
 % -> C sera la CNF que codifiqui que no s'amenecen les reines de les mateixes columnes
 % ...
+noAmenacesColumnes([],[]).
+noAmenacesColumnes([H],C):- noAmenacesFiles([H], C).
+noAmenacesColumnes([H|T],C):- transpose([H|T], Tr), noAmenacesFiles(Tr, C).
+
 
 % AQUEST PREDICAT ESTA PARCIALMENT FET. CAL QUE CALCULEU LES "ALTRES"
 % DIAGONALS
