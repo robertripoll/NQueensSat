@@ -269,20 +269,20 @@ llegeixLlista([]).
 resol():-
     write('Introdueix mida N del tauler NxN: '),
     llegeixNombre(N),
-    write('Introdueix les posicions inicials: \n'),
+    write('Introdueix les posicions inicials (entra un <= 0 per acabar): \n'),
     llegeixLlista(I),
-    write('Introdueix les posicions prohibides: \n'),
+    write('Introdueix les posicions prohibides (entra un <= 0 per acabar): \n'),
     llegeixLlista(P),
-    fesTauler(N,I,P,V,Ini),
-    minimNReines(V,FN),
-    ...
-    noAmenacesFiles(V,CNFfiles),
-    ...
-    noAmenacesColumnes(V,CNFcolumnes),
-    ...
-    noAmenacesDiagonals(N,CNFdiagonals),
-    ...
-    sat(...,[],...),
+    fesTauler(N, I, P, V, Ini),
+    minimNReines(V, FN),
+    append(Ini, FN, CNF),
+    noAmenacesFiles(V, CNFfiles),
+    append(CNFfiles, CNF, CNF2)
+    noAmenacesColumnes(V, CNFcolumnes),
+    append(CNFcolumnes, CNF2, CNF3),
+    noAmenacesDiagonals(N, CNFdiagonals),
+    append(CNFdiagonals, CNF3, CNF4),
+    sat(CNF4, [], M),
     ...
     mostraTauler(N,...).
 
