@@ -67,7 +67,7 @@ simplif(Lit, [_|F], FS) :- simplif(Lit, F, FS).
 % -> el segon parametre sera la CNF que codifica que com a minim una sigui certa.
 % ...
 
-comaminimUn(+L, [L]).
+comaminimUn(L, [L]).
 
 %%%%%%%%%%%%%%%%%%%
 % comamoltUn(L,CNF)
@@ -90,7 +90,7 @@ parelles([X|L1], [], P) :- treurePrimer(L1, L2), parelles(L1, L2, P).
 % sense el primer element de la primera llista
 parelles([X|L], P) :- parelles([X|L], L, P).
 
-comamoltUn(+L, CNF) :- parelles(L, P), append([L], P, CNF).
+comamoltUn(L, CNF) :- parelles(L, P), append([L], P, CNF).
 
 %%%%%%%%%%%%%%%%%%%
 % exactamentUn(L,CNF)
@@ -98,7 +98,7 @@ comamoltUn(+L, CNF) :- parelles(L, P), append([L], P, CNF).
 % -> el segon parametre sera la CNF que codifica que exactament una sigui certa.
 % ...
 
-exactamentUn(+L, CNF) :- comaminimUn(L, CNF), comamoltUn(L, CNF).
+exactamentUn(L, CNF) :- comaminimUn(L, CNF), comamoltUn(L, CNF).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 % fesTauler(+N,+PI,+PP,V,I)
@@ -207,7 +207,11 @@ noAmenacesColumnes([H|T],C):- transpose([H|T], Tr), noAmenacesFiles(Tr, C).
 % donada la mida del tauler,
 % -> D sera la CNF que codifiqui que no s'amenecen les reines de les mateixes diagonals
 noAmenacesDiagonals(N,D):-
-    diagonals(N,L), llistesDiagonalsAVars(L,N,VARS), ...
+    diagonals(N,L), llistesDiagonalsAVars(L,N,VARS), expandeix(VARS,D).
+    
+expandeix([],[]).
+expandeix([H],L):- comamoltUn(H,Ls), append(Ls,[],L).
+expandeix([H|R],L):- comamoltUn(H,Ls), append(Ls,Lr,L), inoAmenacaDiagonals(R,Lr).
 
 
 % Genera les llistes de diagonals d'una matriu NxN. Cada diagonal es una llista de coordenades.
@@ -220,7 +224,6 @@ diagonals(N,L):- diagonalsIn(1,N,L1), diagonals2In(1,N,L2), append(L1,L2,L).
 % ?- diagonalsIn(1,3,L).
 % L = [[(1,1)],[(1,2),(2,1)],[(1,3),(2,2),(3,1)],[(2,3),(3,2)],[(3,3)]]
 % Evidentment les diagonals amb una sola coordenada les ignorarem...
-
 diagonalsIn(D,N,[]):-D is 2*N,!.
 diagonalsIn(D,N,[L1|L]):- D=<N,fesDiagonal(1,D,L1), D1 is D+1, diagonalsIn(D1,N,L).
 diagonalsIn(D,N,[L1|L]):- D>N, F is D-N+1,fesDiagonalReves(F,N,N,L1), D1 is D+1, diagonalsIn(D1,N,L).
@@ -230,8 +233,7 @@ fesDiagonal(F,C,[(F,C)|R]):- F1 is F+1, C1 is C-1, fesDiagonal(F1,C1,R).
 
 % quan la fila es N parem
 fesDiagonalReves(N,C,N,[(N,C)]):-!.
-fesDiagonalReves(F,C,N,[(F,C)|R]):-F1 is F+1, C1 is C-1, fesDiagonalReves(F1,C1,N,R).
-
+fesDiagonalReves(F,C,N,[(F,C)|R]):-F1 is F+1, C1 is C-1, fesDiagonalReves(F1,C1,N,R). 
 
 
 % diagonals2In(D,N,L)
@@ -240,6 +242,17 @@ fesDiagonalReves(F,C,N,[(F,C)|R]):-F1 is F+1, C1 is C-1, fesDiagonalReves(F1,C1,
 % ?- diagonals2In(1,3,L).
 % L = [[(3,1)],[(3,2),(2,1)],[(3,3),(2,2),(1,1)],[(2,3),(1,2)],[(1,3)]]
 % ...
+diagonals2In(D,N,[]):-D is 2*N,!.
+diagonals2In(D,N,[L1|L]):- D=<N, fesDiagonal2(N,D,L1), D1 is D+1, diagonals2In(D1,N,L).
+diagonals2In(D,N,[L1|L]):- D>N, F is N*2-D,fesDiagonalReves2(F,N,N,L1), D1 is D+1, diagonals2In(D1,N,L).
+
+fesDiagonal2(F,1,[(F,1)]):- !.
+fesDiagonal2(F,C,[(F,C)|R]):- F1 is F-1, C1 is C-1, fesDiagonal2(F1,C1,R).
+
+% quan la fila és 1 parem
+fesDiagonalReves2(1,C,N,[(1,C)]):-!.
+fesDiagonalReves2(F,C,N,[(F,C)|R]):-F1 is F-1, C1 is C-1, fesDiagonalReves2(F1,C1,N,R). 
+
 
 % Passa una llista de coordenades  de tauler NxN a variables corresponents.
 coordenadesAVars([],_,[]).
