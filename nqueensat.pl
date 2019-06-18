@@ -211,7 +211,7 @@ noAmenacesDiagonals(N,D):-
     
 expandeix([],[]).
 expandeix([H],L):- comamoltUn(H,Ls), append(Ls,[],L).
-expandeix([H|R],L):- comamoltUn(H,Ls), append(Ls,Lr,L), inoAmenacaDiagonals(R,Lr).
+expandeix([H|R],L):- comamoltUn(H,Ls), append(Ls,Lr,L), expandeix(R,Lr).
 
 
 % Genera les llistes de diagonals d'una matriu NxN. Cada diagonal es una llista de coordenades.
