@@ -1,6 +1,13 @@
 :- use_module(library(lists)). % Necessari per al l'ús del predicat "delete"
 
 %%%%%%%%%%%%
+% AUX
+% empty(L)
+% Si L està buida retorna cert; fals altrament.
+
+empty([]).
+
+%%%%%%%%%%%%
 % sat(F,I,M)
 % si F es satisfactible, M sera el model de F afegit a la interpretació I (a la primera crida I sera buida).
 % Assumim invariant que no hi ha literals repetits a les clausules ni la clausula buida inicialment.
@@ -31,6 +38,7 @@ decideix([[X]|F], X) :- !.
 decideix([[_|_]|F], X) :- decideix(F, X).
 % Hem arribat a l'última clàusula de la llista (no n'hi ha més), agafem el seu primer literal
 decideix([[X|_]], X).
+% Permetem fer backtraking, per retornar el primer literal negat de l'última clàusula
 decideix([[X|_]], Y) :- Y is X*(-1).
 
 %%%%%%%%%%%%%%%%%%%%%
@@ -43,8 +51,6 @@ decideix([[X|_]], Y) :- Y is X*(-1).
 
 % No hi ha clàusules
 simplif(_, [], []).
-% Si Lit negat apareix a C i després de treure'l de C és buida fallem sense buscar alternatives, permetent trobar alternatives (backtracking) si s'escau
-%simplif(Lit, [C|F], [CS|FS]) :- NotLit is -Lit, member(NotLit, C), delete(C, NotLit, CS), empty(CS), !, fail.
 % Si Lit negat apareix a C i després de treure'l de C, C' no és buida sense buscar alternatives, la guardem a FS
 simplif(Lit, [C|F], [CS|FS]) :- NotLit is -Lit, member(NotLit, C), delete(C, NotLit, CS), !, \+empty(CS), simplif(Lit, F, FS).
 % Si Lit no apareix a la clàusula C, no busquem alternatives (!) i afegim C a FS
@@ -70,13 +76,26 @@ simplif(Lit, [_|F], FS) :- simplif(Lit, F, FS).
 comaminimUn(L, [L]).
 
 %%%%%%%%%%%%%%%%%%%
-% comamoltUn(L,CNF)
-% Donat una llista de variables booleanes,
-% -> el segon parametre sera la CNF que codifica que com a molt una sigui certa.
-% ...
+% AUX
+% treurePrimer(+L1, L2)
+% Donada una llista d'enters L1, "retorna" L2 tota la llista L1 a
+% excepció del primer element.
+% Per exemple:
+% | ?- treurePrimer([1,2,3,4], L).
+% L = [2,3,4]
 
 treurePrimer([], []).
 treurePrimer([_|L1], L1).
+
+%%%%%%%%%%%%%%%%%%%
+% AUX !!!!!!!!!!!!!!!!!!!!!!!!!!!
+% parelles(+L1, +L2, P)
+% Donada una llista d'enters L1, construeix una llista P amb les
+% parelles resultants de combinar L1 amb L2, on els enters que
+% formen les parelles són negatius.
+% Per exemple:
+% | ?- treurePrimer([1,2,3,4], L).
+% L = [2,3,4]
 
 % No queden més variables per emparellar
 parelles([], [], []) :- !.
@@ -85,10 +104,25 @@ parelles([X|L1], [Y|L2], [[X2,Y2]|P]) :- X2 is X*(-1), Y2 is Y*(-1), parelles([X
 % No queden més variables de la segona llista, passem a emparellar a partir del següent element de la primera llista
 parelles([X|L1], [], P) :- treurePrimer(L1, L2), parelles(L1, L2, P).
 
+%%%%%%%%%%%%%%%%%%%
+% AUX !!!!!!!!!!!!!!!!!!!!!!!!!!!
+% parelles(+L, P)
+% Donada una llista d'enters L, construeix una llista de parelles amb tots
+% els elements (en negatiu)de la llista combinats sense repeticions. Per
+% repeticions s'entén: [4,3] == [3,4] (per tant només hi haurà [3,4])
+% Per exemple:
+% | ?- parelles([1,2,3,4], L).
+% L = [[-1,-2],[-1,-3],[-1,-4],[-2,-3],[-2,-4],[-3,-4]]
 
 % Comencem el procés d'emparellament a partir d'una primera llista formada per la llista del paràmetre i d'una segona llista
 % sense el primer element de la primera llista
 parelles([X|L], P) :- parelles([X|L], L, P).
+
+%%%%%%%%%%%%%%%%%%%
+% comamoltUn(L,CNF)
+% Donat una llista de variables booleanes,
+% -> el segon parametre sera la CNF que codifica que com a molt una sigui certa.
+% ...
 
 comamoltUn(L, CNF) :- parelles(L, P), append([L], P, CNF).
 
@@ -123,7 +157,7 @@ toCNF(N,Signe,[(X,Y)],CNF):- Res is Signe*((X-1)*N+Y), append([],[Res],CNF),!.
 toCNF(N,Signe,[(X,Y)|R],CNF):- Res is Signe*((X-1)*N+Y), append([Res],LR, CNF), toCNF(N, Signe, R, LR).
 
 
-% AUX
+%%%%%%%%%%%%%%%%%%%
 % llista(I,F,L)
 % Donat un inici i un fi
 % -> el tercer parametre sera una llista de numeros d'inici a fi
@@ -135,7 +169,15 @@ llista(F, F, [F|L]) :- !, I is F + 1, llista(I, F, L).
 % Generem l'ítem número I de la llista
 llista(I, F, [I|L]) :- I2 is I + 1, llista(I2, F, L).
 
+%%%%%%%%%%%%%%%%%%%
 % AUX
+% extreu(+Inici, +Fi, +Actual, +L1, L2)
+% Donada una llista d'enters L1, "retorna" a L2 tots els enters d'L1
+% que es trobin dins l'interval ["Inici","Fi"] començant per "Actual".
+% "Actual" és la variable que permet controlar l'índex de l'element iterat.
+% Per exemple:
+% | ?- extreu(4, 7, 1, [1,2,3,4,5,6,7,8,9], L).
+% L = [4,5,6,7]
 
 % Ja som fora l'interval, hem passat de "Final" i deixem de cercar
 extreu(I, F, X, _, []) :- X > F, !.
@@ -149,6 +191,15 @@ extreu(I, F, X, [E|L], [E|LL]) :- X2 is X + 1, X >= I, X =< F, extreu(I, F, X2, 
 % (Inici i Fi), LL serà la llista amb els elements que es trobin dins
 % d'aquest interval dins d'L.
 extreu(I, F, L, LL) :- extreu(I, F, 1, L, LL).
+
+%%%%%%%%%%%%%%%%%%%
+% AUX
+% trosseja(+L1, +Inici, +Fi, +MidaTros, L2)
+% Donada una llista d'enters L1, "retorna" a L2 tots els "Fi" trossos
+% de mida "MidaTros" començant per "Inici".
+% Per exemple:
+% | ?- trosseja([1,2,3,4,5,6], 1, 3, 2, L).
+% L = [[1,2],[3,4],[5,6]]
 
 % Ja hem fet els "NT" (número de trossos) trossos, deixem de cercar
 trosseja(_, T, NT, _, []) :- T > NT, !.
@@ -272,13 +323,35 @@ llistesDiagonalsAVars([H|R],N,L):- toCNF(N,1,H,Ls), append([Ls],Lr,L), llistesDi
 % ...
 minimNReines(V,F):- V=F.
 
+%%%%%%%%%%%%%%%%%%%
+% AUX
+% llegeixNombre(X)
+% Llegeix un enter per teclat i el "retorna" a X.
+
 llegeixNombre(X) :- read(X), number(X), !.
+
+%%%%%%%%%%%%%%%%%%%
+% AUX
+% llegeixLlista(L)
+% Llegeix una llista d'enters per teclat i la "retorna" a X.
 
 llegeixLlista([X|L]) :- read(X), number(X), X > 0, llegeixLlista(L).
 llegeixLlista([]).
 
+%%%%%%%%%%%%%%%%%%%
+% AUX
+% filtrarPositius(+L1, L2)
+% Donada una llista d'enters L1, "retorna" a L2 tots els enters
+% d'L1 positius.
+% Per exemple:
+% | ?- filtrarPositius([1,-2,-3,-1,2,3,1], 3, L).
+% L = [1,2,3,1]
+
+% No hi ha cap enter a la llista
 filtrarPositius([], []).
+% L'enter de la iteració actual és positiu (major que 0), el guardem a L2
 filtrarPositius([X|L], [X|P]) :- X > 0, !, filtrarPositius(L, P).
+% L'enter de la iteració actual és negatiu (menor que 0), seguim iterant sense guardar-lo a L2
 filtrarPositius([_|L], P) :- filtrarPositius(L, P).
 
 %%%%%%%%%
@@ -309,7 +382,51 @@ resol :-
 
 
 %%%%%%%%%%%%%%%%%%%
-% mostraTauler(N,M)
+% AUX
+% mostrar(+C, +S, +Q)
+% Donada una llista de cel·les C, un enter S de caràcters que formaran
+% el separador de files i una llista reines col·locades Q, mostra per
+% per pantalla el tauler començant d'esquerra a dreta i de dalt a baix.
+% Per exemple:
+% | ?- mostrar([1,2,3,4,5,6,7,8,9], 3, [1,5,8,9]).
+% -------
+% |Q| | |
+% -------
+% | |Q| |
+% -------
+% | |Q|Q|
+% -------
+
+% Ja hem recorregut tota la llista d'enters L
+mostrar([], S, Q) :- !.
+% L'enter actual de la llista de columnes de la fila actual de la llista d'enters L és membre de la llista Q
+mostrar([[C|R]|L], S, Q) :- member(C, Q), write('|Q'), !, mostrar([R|L], S, Q).
+% L'enter actual de la llista de columnes de la fila actual de la llista d'enters L NO és membre de la llista Q
+mostrar([[C|R]|L], S, Q) :- write('| '), !, mostrar([R|L], S, Q).
+% L'últim enter de la llista de columnes de la fila actual de la llista d'enters L és membre de la llista Q
+mostrar([[C|[]]|L], S, Q) :- member(C, Q), write(' Q'), !, mostrar(L, S, Q).
+% L'últim enter de la llista de columnes de la fila actual de la llista d'enters L NO és membre de la llista Q
+mostrar([[C|[]]|L], S, Q) :- write(' '), !, mostrar(L, S, Q).
+% Ja no queden més columnes de la fila actual de la llista d'enters L NO és membre de la llista Q
+mostrar([[]|L], S, Q) :- write('|\n'), mostrarSeparador(S), !, mostrar(L, S, Q).
+
+%%%%%%%%%%%%%%%%%%%
+% AUX
+% mostrarSeparador(+N)
+% Mostra per pantalla el caràcter '-' tants cops com N.
+% Un cop excedit N es mostra un new line.
+% Per exemple:
+% | ?- mostrarSeparador(6).
+% ------
+%
+
+% Ja hem mostrar l'últim caràcter
+mostrarSeparador(0) :- write('\n').
+% Mostrem el caràcter '-' fins que N arribi a 0
+mostrarSeparador(N) :- write('-'), N2 is N-1, mostrarSeparador(N2).
+
+%%%%%%%%%%%%%%%%%%%
+% mostraTauler(N, M)
 % donat una mida de tauler N i una llista de numeros d'1 a N*N,
 % mostra el tauler posant una Q a cada posicio recorrent per files
 % d'equerra a dreta.
@@ -324,47 +441,5 @@ resol :-
 % -------
 % Fixeu-vos que li passarem els literals positius del model de la nostra
 % formula.
-% ...
-
-mostrar([], S, Q) :- !.
-mostrar([[C|R]|L], S, Q) :- member(C, Q), write('|Q'), !, mostrar([R|L], S, Q).
-mostrar([[C|R]|L], S, Q) :- write('| '), !, mostrar([R|L], S, Q).
-mostrar([[C|[]]|L], S, Q) :- member(C, Q), write(' Q'), !, mostrar(L, S, Q).
-mostrar([[C|[]]|L], S, Q) :- write(' '), !, mostrar(L, S, Q).
-mostrar([[]|L], S, Q) :- write('|\n'), mostrarSeparador(S), !, mostrar(L, S, Q).
-
-mostrarSeparador(0) :- write('\n').
-mostrarSeparador(N) :- write('-'), N2 is N-1, mostrarSeparador(N2).
 
 mostraTauler(N, Q) :- S is (N+1)+N, mostrarSeparador(S), M is N*N, llista(1, M, L), trosseja(L, N, C), mostrar(C, S, Q).
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
