@@ -246,6 +246,9 @@ coordenadesAVars([(F,C)|R],N,[V|RV]):-V is (F-1)*N+C, coordenadesAVars(R,N,RV).
 % Passa una llista de diagonals a llistes de llistes de variables
 %llistesDiagonalsAVars(Lparells,N,Lvars).
 %...
+llistesDiagonalsAVars([],_,[]).
+llistesDiagonalsAVars([H],N,L):- toCNF(N,1,H,Ls), append([Ls],[],L).
+llistesDiagonalsAVars([H|R],N,L):- toCNF(N,1,H,Ls), append([Ls],Lr,L), llistesDiagonalsAVars(R,N,Lr).
 
 %%%%%%%%%%%%%%%%%%%%%
 % minimNReines(+V,FN)
