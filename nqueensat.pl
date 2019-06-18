@@ -248,13 +248,16 @@ coordenadesAVars([(F,C)|R],N,[V|RV]):-V is (F-1)*N+C, coordenadesAVars(R,N,RV).
 % Passa una llista de diagonals a llistes de llistes de variables
 %llistesDiagonalsAVars(Lparells,N,Lvars).
 %...
+llistesDiagonalsAVars([],_,[]).
+llistesDiagonalsAVars([H],N,L):- toCNF(N,1,H,Ls), append([Ls],[],L).
+llistesDiagonalsAVars([H|R],N,L):- toCNF(N,1,H,Ls), append([Ls],Lr,L), llistesDiagonalsAVars(R,N,Lr).
 
 %%%%%%%%%%%%%%%%%%%%%
 % minimNReines(+V,FN)
 % donada la matriu de variables (inicialment d'un tauler NxN),
 % -> FN sera la CNF que codifiqui que hi ha d'haver com a minim N reines al tauler
 % ...
-
+minimNReines(V,F):- V=F.
 
 llegeixNombre(X) :- read(X), number(X), !.
 
