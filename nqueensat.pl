@@ -261,6 +261,10 @@ llegeixNombre(X) :- read(X), number(X), !.
 llegeixLlista([X|L]) :- read(X), number(X), X > 0, llegeixLlista(L).
 llegeixLlista([]).
 
+filtrarPositius([], []).
+filtrarPositius([X|L], [X|P]) :- X > 0, !, filtrarPositius(L, P).
+filtrarPositius([_|L], P) :- filtrarPositius(L, P).
+
 %%%%%%%%%
 % resol()
 % Ens demana els parametres del tauler i l'estat inicial,
@@ -284,8 +288,8 @@ resol():-
     noAmenacesDiagonals(N, CNFdiagonals),
     append(CNFdiagonals, CNF3, CNF4),
     sat(CNF4, [], M),
-    ...
-    mostraTauler(N,...).
+    filtrarPositius(M, M2),
+    mostraTauler(N, M2).
 
 
 %%%%%%%%%%%%%%%%%%%
