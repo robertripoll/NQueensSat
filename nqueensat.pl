@@ -1,4 +1,4 @@
-use_module(library(lists)). % Necessari per al l'ús del predicat "delete"
+:- use_module(library(lists)). % Necessari per al l'ús del predicat "delete"
 
 %%%%%%%%%%%%
 % sat(F,I,M)
@@ -271,7 +271,7 @@ filtrarPositius([_|L], P) :- filtrarPositius(L, P).
 % codifica les restriccions del problema i en fa una formula
 % que la enviem a resoldre amb el SAT solver
 % i si te solucio en mostrem el tauler
-resol():-
+resol :-
     write('Introdueix mida N del tauler NxN: '),
     llegeixNombre(N),
     write('Introdueix les posicions inicials (entra un <= 0 per acabar): \n'),
@@ -282,7 +282,7 @@ resol():-
     minimNReines(V, FN),
     append(Ini, FN, CNF),
     noAmenacesFiles(V, CNFfiles),
-    append(CNFfiles, CNF, CNF2)
+    append(CNFfiles, CNF, CNF2),
     noAmenacesColumnes(V, CNFcolumnes),
     append(CNFcolumnes, CNF2, CNF3),
     noAmenacesDiagonals(N, CNFdiagonals),
