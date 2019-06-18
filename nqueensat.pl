@@ -306,6 +306,18 @@ resol():-
 % formula.
 % ...
 
+mostrar([], S, Q) :- !.
+mostrar([[C|R]|L], S, Q) :- member(C, Q), write('|Q'), !, mostrar([R|L], S, Q).
+mostrar([[C|R]|L], S, Q) :- write('| '), !, mostrar([R|L], S, Q).
+mostrar([[C|[]]|L], S, Q) :- member(C, Q), write(' Q'), !, mostrar(L, S, Q).
+mostrar([[C|[]]|L], S, Q) :- write(' '), !, mostrar(L, S, Q).
+mostrar([[]|L], S, Q) :- write('|\n'), mostrarSeparador(S), !, mostrar(L, S, Q).
+
+mostrarSeparador(0) :- write('\n').
+mostrarSeparador(N) :- write('-'), N2 is N-1, mostrarSeparador(N2).
+
+mostraTauler(N, Q) :- S is (N+1)+N, mostrarSeparador(S), M is N*N, llista(1, M, L), trosseja(L, N, C), mostrar(C, S, Q).
+
 
 
 
