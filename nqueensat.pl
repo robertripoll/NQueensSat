@@ -257,7 +257,7 @@ llistesDiagonalsAVars([H|R],N,L):- toCNF(N,1,H,Ls), append([Ls],Lr,L), llistesDi
 % donada la matriu de variables (inicialment d'un tauler NxN),
 % -> FN sera la CNF que codifiqui que hi ha d'haver com a minim N reines al tauler
 % ...
-
+minimNReines(V,F):- V=F.
 
 llegeixNombre(X) :- read(X), number(X), !.
 
