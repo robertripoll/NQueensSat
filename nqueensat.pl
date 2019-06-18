@@ -380,6 +380,32 @@ resol :-
     filtrarPositius(M, M2),
     mostraTauler(N, M2).
 
+%%%%%%%%%
+% resol(N, +I, +P)
+% N és la mida del tauler NxN, I és la llista de posicions inicials,
+% P és la llista de posicions prohibides. Codifica les restriccions
+% del problema i en fa una formula que la enviem a resoldre amb el
+% SAT solver i si te solucio en mostrem el tauler
+resol :-
+    write('Introdueix mida N del tauler NxN: '),
+    llegeixNombre(N),
+    write('Introdueix les posicions inicials (entra un <= 0 per acabar): \n'),
+    llegeixLlista(I),
+    write('Introdueix les posicions prohibides (entra un <= 0 per acabar): \n'),
+    llegeixLlista(P),
+    fesTauler(N, I, P, V, Ini),
+    minimNReines(V, FN),
+    append(Ini, FN, CNF),
+    noAmenacesFiles(V, CNFfiles),
+    append(CNFfiles, CNF, CNF2),
+    noAmenacesColumnes(V, CNFcolumnes),
+    append(CNFcolumnes, CNF2, CNF3),
+    noAmenacesDiagonals(N, CNFdiagonals),
+    append(CNFdiagonals, CNF3, CNF4),
+    sat(CNF4, [], M),
+    filtrarPositius(M, M2),
+    mostraTauler(N, M2).
+
 
 %%%%%%%%%%%%%%%%%%%
 % AUX
