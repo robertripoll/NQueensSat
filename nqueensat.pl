@@ -145,7 +145,7 @@ fesTauler(N,[],[],V,[]):- trosseja(L,N,V), llista(1, N*N, L),!.
 fesTauler(N,PI,PP,V,I) :- trosseja(L,N,V), llista(1, N*N, L),
                           Prohibit is -1, toCNF(N,Prohibit,PP,L1),
                           Reines is 1, toCNF(N,Reines,PI,L2),
-                          append(L1,L2,I).
+                          append(L1,L2,Ia), length(Ia, X), trosseja(Ia,X,I).
                           
 % toCNF(N,Signe,Posicions,CNF).
 % Donada la mida N del costat del tauler NxN i donat un Signe (valor positiu o valor negatiu) i 
@@ -259,10 +259,13 @@ noAmenacesColumnes([H|T],C):- transpose([H|T], Tr), noAmenacesFiles(Tr, C).
 % -> D sera la CNF que codifiqui que no s'amenecen les reines de les mateixes diagonals
 noAmenacesDiagonals(N,D):-
     diagonals(N,L), llistesDiagonalsAVars(L,N,VARS), expandeix(VARS,D).
-    
-expandeix([],[]).
-expandeix([H],L):- comamoltUn(H,Ls), append(Ls,[],L).
-expandeix([H|R],L):- comamoltUn(H,Ls), append(Ls,Lr,L), expandeix(R,Lr).
+
+% expandeix_comamoltUn(V,L)
+% Donada una llista V que conté llistes de enters, s'aplica per a cada llista el mètode ComamoltUn, 
+% L és la concatenació de totes aquestes noves clausules.
+expandeix_comamoltUn([],[]).
+expandeix_comamoltUn([H],L):- comamoltUn(H,Ls), append(Ls,[],L).
+expandeix_comamoltUn([H|R],L):- comamoltUn(H,Ls), append(Ls,Lr,L), expandeix_comamoltUn(R,Lr).
 
 
 % Genera les llistes de diagonals d'una matriu NxN. Cada diagonal es una llista de coordenades.
@@ -308,13 +311,13 @@ fesDiagonal2(F,C,[(F,C)|R]):- F1 is F-1, C1 is C-1, fesDiagonal2(F1,C1,R).
 fesDiagonalReves2(1,C,N,[(1,C)]):-!.
 fesDiagonalReves2(F,C,N,[(F,C)|R]):-F1 is F-1, C1 is C-1, fesDiagonalReves2(F1,C1,N,R). 
 
-
+% coordenadesAVars(L,N,Ls)
 % Passa una llista de coordenades  de tauler NxN a variables corresponents.
 coordenadesAVars([],_,[]).
 coordenadesAVars([(F,C)|R],N,[V|RV]):-V is (F-1)*N+C, coordenadesAVars(R,N,RV).
 
+% llistesDiagonalsAVars(Lparells,N,Lvars).
 % Passa una llista de diagonals a llistes de llistes de variables
-%llistesDiagonalsAVars(Lparells,N,Lvars).
 %...
 llistesDiagonalsAVars([],_,[]).
 llistesDiagonalsAVars([H],N,L):- toCNF(N,1,H,Ls), append([Ls],[],L).
@@ -402,8 +405,9 @@ resol(N, I, P) :-
     append(CNFdiagonals, CNF3, CNF4),
     sat(CNF4, [], M),
     filtrarPositius(M, M2),
-    mostraTauler(N, M2).
-
+    mostraTauler(N, M2),
+    write("Reines:"),nl,
+    write(M2).
 
 
 %%%%%%%%%%%%%%%%%%%
