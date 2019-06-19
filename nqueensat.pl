@@ -393,7 +393,7 @@ resol :-
 resol(N, I, P) :-
     fesTauler(N, I, P, V, Ini),
     minimNReines(V, FN),
-    append(Ini, V, CNF),
+    append(Ini, FN, CNF),
     noAmenacesFiles(V, CNFfiles),
     append(CNFfiles, CNF, CNF2),
     noAmenacesColumnes(V, CNFcolumnes),
