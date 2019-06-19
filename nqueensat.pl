@@ -141,8 +141,8 @@ exactamentUn(L, CNF) :- comaminimUn(L, CNF), comamoltUn(L, CNF).
 % -> V sera el la llista de llistes variables necessaries per codificar el tauler
 % -> I sera la CNF codificant posicions inicials i prohibides
 % ...
-fesTauler(N,[],[],V,[]):- trosseja(L,N,V), llista(1, N*N, L).
-fesTauler(N,PI,PP,V,I) :- trosseja(L,N,V), llista(1, N*N, L),
+fesTauler(N,[],[],V,[]):- llista(1, N*N, L), trosseja(L,N,V).
+fesTauler(N,PI,PP,V,I) :- llista(1, N*N, L), trosseja(L,N,V),
                           Prohibit is -1, toCNF(N,Prohibit,PP,L1),
                           Reines is 1, toCNF(N,Reines,PI,L2),
                           append(L1,L2,I).
@@ -335,8 +335,8 @@ llegeixNombre(X) :- read(X), number(X), !.
 % llegeixLlista(L)
 % Llegeix una llista d'enters per teclat i la "retorna" a X.
 
-llegeixLlista([X|L]) :- read(X), number(X), X > 0, llegeixLlista(L).
-llegeixLlista([]).
+llegeixLlista([X|L]) :- read(X), number(X), X > 0, !, llegeixLlista(L).
+llegeixLlista([]) :- !.
 
 %%%%%%%%%%%%%%%%%%%
 % AUX
