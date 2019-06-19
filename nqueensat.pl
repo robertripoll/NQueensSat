@@ -258,7 +258,7 @@ noAmenacesColumnes([H|T],C):- transpose([H|T], Tr), noAmenacesFiles(Tr, C).
 % donada la mida del tauler,
 % -> D sera la CNF que codifiqui que no s'amenecen les reines de les mateixes diagonals
 noAmenacesDiagonals(N,D):-
-    diagonals(N,L), llistesDiagonalsAVars(L,N,VARS), expandeix(VARS,D).
+    diagonals(N,L), llistesDiagonalsAVars(L,N,VARS), expandeix_comamoltUn(VARS,D).
 
 % expandeix_comamoltUn(V,L)
 % Donada una llista V que conté llistes de enters, s'aplica per a cada llista el mètode ComamoltUn, 
