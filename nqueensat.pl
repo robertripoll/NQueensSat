@@ -124,7 +124,7 @@ parelles([X|L], P) :- parelles([X|L], L, P).
 % -> el segon parametre sera la CNF que codifica que com a molt una sigui certa.
 % ...
 
-comamoltUn(L, CNF) :- parelles(L, P), append([L], P, CNF).
+comamoltUn(L, CNF) :- parelles(L, P), append([], P, CNF).
 
 %%%%%%%%%%%%%%%%%%%
 % exactamentUn(L,CNF)
@@ -141,8 +141,8 @@ exactamentUn(L, CNF) :- comaminimUn(L, CNF), comamoltUn(L, CNF).
 % -> V sera el la llista de llistes variables necessaries per codificar el tauler
 % -> I sera la CNF codificant posicions inicials i prohibides
 % ...
-fesTauler(N,[],[],V,[]):- llista(1, N*N, L), trosseja(L,N,V).
-fesTauler(N,PI,PP,V,I) :- llista(1, N*N, L), trosseja(L,N,V),
+fesTauler(N,[],[],V,[]):- trosseja(L,N,V), llista(1, N*N, L),!.
+fesTauler(N,PI,PP,V,I) :- trosseja(L,N,V), llista(1, N*N, L),
                           Prohibit is -1, toCNF(N,Prohibit,PP,L1),
                           Reines is 1, toCNF(N,Reines,PI,L2),
                           append(L1,L2,I).
@@ -152,7 +152,7 @@ fesTauler(N,PI,PP,V,I) :- llista(1, N*N, L), trosseja(L,N,V),
 % donada una llista de parells d'enters (posicions (X,Y) del tauler)
 % -> CNF serà la llista d'enters a partir de l'index amb la formula Signe*((X-1)*N+Y) 
 % (posicions dins un vector).
-toCNF(N,Signe,[],[]).
+toCNF(_,_,[],[]).
 toCNF(N,Signe,[(X,Y)],CNF):- Res is Signe*((X-1)*N+Y), append([],[Res],CNF),!.
 toCNF(N,Signe,[(X,Y)|R],CNF):- Res is Signe*((X-1)*N+Y), append([Res],LR, CNF), toCNF(N, Signe, R, LR).
 
@@ -266,7 +266,11 @@ expandeix([H|R],L):- comamoltUn(H,Ls), append(Ls,Lr,L), expandeix(R,Lr).
 
 
 % Genera les llistes de diagonals d'una matriu NxN. Cada diagonal es una llista de coordenades.
-diagonals(N,L):- diagonalsIn(1,N,L1), diagonals2In(1,N,L2), append(L1,L2,L).
+diagonals(N,L):- diagonalsIn(1,N,L1), diagonals2In(1,N,L2), append(L1,L2,L3), netejaUnitaries(L3,L).
+
+netejaUnitaries([],[]).
+netejaUnitaries([H|T],L):- length(H,1), netejaUnitaries(T,L).
+netejaUnitaries([H|T],L):- append([H],R,L), netejaUnitaries(T,R).
 
 % diagonalsIn(D,N,L)
 % Generem les diagonals dalt-dreta a baix-esquerra, D es el numero de
@@ -389,7 +393,7 @@ resol :-
 resol(N, I, P) :-
     fesTauler(N, I, P, V, Ini),
     minimNReines(V, FN),
-    append(Ini, FN, CNF),
+    append(Ini, V, CNF),
     noAmenacesFiles(V, CNFfiles),
     append(CNFfiles, CNF, CNF2),
     noAmenacesColumnes(V, CNFcolumnes),
@@ -399,6 +403,7 @@ resol(N, I, P) :-
     sat(CNF4, [], M),
     filtrarPositius(M, M2),
     mostraTauler(N, M2).
+
 
 
 %%%%%%%%%%%%%%%%%%%
@@ -462,4 +467,4 @@ mostrarSeparador(N) :- write('-'), N2 is N-1, mostrarSeparador(N2).
 % Fixeu-vos que li passarem els literals positius del model de la nostra
 % formula.
 
-mostraTauler(N, Q) :- S is (N+1)+N, mostrarSeparador(S), M is N*N, llista(1, M, L), trosseja(L, N, C), mostrar(C, S, Q).
+mostraTauler(N, Q) :- S is (N+1)+N, mostrarSeparador(S), M is N*N, llista(1, M, L), trosseja(L, N, C), mostrar(C, S, Q),!.
